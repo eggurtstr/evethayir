@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evet mi Hayır mı?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0; 
+            text-align: center;
+            flex-direction: column;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.5s ease, background-image 0.5s ease; 
+        }
+
+        .sunlight-bg {
+            background-color: #f0f0f0;
+            background-image: radial-gradient(circle at 50% 0%, #ffffff, #fff7e6, #f0f0f0 70%);
+        }
+
+        #baslik {
+            z-index: 10;
+            position: relative;
+            color: #333; 
+            transition: color 0.5s ease;
+            margin-bottom: 5px; 
+        }
+        
+        #message-area {
+            font-size: 20px;
+            color: #555;
+            min-height: 24px; 
+            z-index: 10;
+            position: relative;
+            transition: color 0.5s ease;
+            margin-top: 5px;
+        }
+
+        #button-container {
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #yes-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #no-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #success-message {
+            display: none;
+            font-size: 48px;
+            color: #4CAF50;
+            z-index: 10;
+            position: relative;
+        }
+
+        #rain-container, #confetti-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .rain-drop {
+            position: absolute;
+            background-color: rgba(173, 216, 230, 0.7);
+            width: 2px;
+            height: 20px;
+            bottom: 100%;
+            animation: fall linear infinite;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00; 
+            top: -20px; 
+            opacity: 1;
+            animation: confetti-fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg); 
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="success-message">Barışacağını biliyordum!!!</h1>
+    
+    <h1 id="baslik">Barışalım mı?</h1>
+    
+    <p id="message-area"></p>
+
+    <div id="button-container">
+        <button id="yes-btn" class="btn">EVET</button>
+        <button id="no-btn" class="btn">HAYIR</button>
+    </div>
+
+    
+<div id="rain-container"></div>
+<div id="confetti-container"></div>
+
+    <script>
+        const yesBtn = document.getElementById('yes-btn');
+        const noBtn = document.getElementById('no-btn');
+        const successMessage = document.getElementById('success-message');
+        const buttonContainer = document.getElementById('button-container');
+        const baslik = document.getElementById('baslik');
+        const messageArea = document.getElementById('message-area');
+        const rainContainer = document.getElementById('rain-container');
+        const confettiContainer = document.getElementById('confetti-container'); 
+        const bodyEl = document.body; 
+
+        let noClickCount = 0;
+
+        const noMessages = [
+            "Emin misin?",
+            "Lütfen tekrar düşün...",
+            "Kırma beni :(",
+            "Seni hayal kırıklığına uğrattım biliyorum..",
+            "Tamam, pes ediyorum.."
+        ];
+        
+        const confettiColors = ['#f44336', '#4CAF50', '#2196F3', '#FFEB3B', '#E91E63', '#9C27B0'];
+
+
+        let yesFontSize = 18;
+        let yesPaddingHorizontal = 30;
+        let yesPaddingVertical = 15;
+
+        let noFontSize = 18;
+        let noPaddingHorizontal = 30;
+        let noPaddingVertical = 15;
+
+        function createRainDrop() {
+            const drop = document.createElement('div');
+            drop.classList.add('rain-drop');
+            drop.style.left = Math.random() * 100 + 'vw';
+            const animationDuration = Math.random() * 1.5 + 0.5;
+            const animationDelay = Math.random() * 2;
+            drop.style.animationDuration = animationDuration + 's';
+            drop.style.animationDelay = animationDelay + 's';
+            rainContainer.appendChild(drop);
+
+            drop.addEventListener('animationend', () => {
+                drop.remove();
+            });
+        }
+
+        function addRainDrops(count) {
+            for (let i = 0; i < count; i++) {
+                createRainDrop();
+            }
+        }
+
+        function createConfettiPiece() {
+            const piece = document.createElement('div');
+            piece.classList.add('confetti');
+            const randomColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+            piece.style.backgroundColor = randomColor;
+            piece.style.left = Math.random() * 100 + 'vw';
+            const animationDuration = Math.random() * 3 + 2; 
+            const animationDelay = Math.random() * 5; 
+            piece.style.animationDuration = animationDuration + 's';
+            piece.style.animationDelay = animationDelay + 's';
+            if (Math.random() > 0.5) {
+                piece.style.width = '5px';
+                piece.style.height = '15px';
+            }
+            confettiContainer.appendChild(piece);
+            piece.addEventListener('animationend', () => {
+                piece.remove();
+            });
+        }
+
+        function startConfettiShower(count) {
+            for (let i = 0; i < count; i++) {
+                createConfettiPiece();
+            }
+        }
+
+
+
+        noBtn.addEventListener('click', () => {
+            noClickCount++; 
+            
+
+            let newColorValue = Math.max(0, 240 - (noClickCount * 48));
+            bodyEl.style.backgroundColor = `rgb(${newColorValue}, ${newColorValue}, ${newColorValue})`;
+
+
+            baslik.style.color = '#FFFFFF';
+            messageArea.style.color = '#f0f0f0'; 
+            
+            let messageIndex = Math.min(noClickCount - 1, noMessages.length - 1);
+            messageArea.textContent = noMessages[messageIndex]; 
+
+            const dropsToAdd = 5 + (noClickCount * 3);
+            addRainDrops(dropsToAdd);
+
+            yesFontSize += 5;
+            yesPaddingHorizontal += 10;
+            yesPaddingVertical += 5;
+            yesBtn.style.fontSize = yesFontSize + 'px';
+            yesBtn.style.padding = `${yesPaddingVertical}px ${yesPaddingHorizontal}px`;
+
+            noFontSize = Math.max(2, noFontSize - 3);
+            noPaddingHorizontal = Math.max(1, noPaddingHorizontal - 5);
+            noPaddingVertical = Math.max(1, noPaddingVertical - 3);
+            noBtn.style.fontSize = noFontSize + 'px';
+            noBtn.style.padding = `${noPaddingVertical}px ${noPaddingHorizontal}px`;
+
+            if (noClickCount >= 5) {
+                noBtn.style.display = 'none';
+            }
+        });
+
+        yesBtn.addEventListener('click', () => {
+            buttonContainer.style.display = 'none';
+            baslik.style.display = 'none';
+            messageArea.style.display = 'none';
+            
+            bodyEl.style.backgroundColor = ''; 
+            bodyEl.classList.add('sunlight-bg');
+            
+            rainContainer.innerHTML = ''; 
+
+            successMessage.style.display = 'block';
+
+            startConfettiShower(100);
+        });
+    </script>
+
+</body>
+</html>
